@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Birthday Hive Theme - Beautiful (Slower Bees)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'monospace', monospace;
+    background: #16110f;
+    width: 100vw; height: 100vh; overflow: hidden;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 0 0;
+    z-index: 0;
+    background:
+      repeating-linear-gradient(135deg, #f9e678 0px, #f9e678 24px, #f7d340 24px, #f7d340 54px, #c69528 54px, #c69528 92px, #1a140a 92px, #1a140a 180px);
+    opacity: 0.19;
+    pointer-events: none;
+  }
+  .hive-area {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0; left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    overflow: hidden;
+  }
+  .hive-container {
+    position: relative;
+    display: inline-block;
+  }
+  .hive-shadow {
+    position: absolute;
+    left: 50%;
+    top: 60%;
+    transform: translate(-50%, 0);
+    width: 106%;
+    height: 38%;
+    background: radial-gradient(ellipse 52% 62% at center, #e6b63548 38%, #1a140a 95%);
+    z-index: 0;
+    opacity: 0.5;
+    pointer-events: none;
+    filter: blur(11px);
+  }
+  #hive {
+    display: block;
+    margin: 0 auto;
+    width: min(440px, 96vw);
+    max-width: 720px;
+    cursor: pointer;
+    touch-action: manipulation;
+    z-index: 2;
+    filter: drop-shadow(0 6px 32px #ffd86280);
+    transition: transform .22s cubic-bezier(.62,-0.36,.62,1.36);
+  }
+  #hive:active { transform: scale(1.11); filter: drop-shadow(0 4px 52px #ffd862e6);}
+  #happyMsg {
+    position: fixed;
+    left: 50%; top: 68%;
+    transform: translate(-50%, 0) scale(1.17);
+    width: 99vw; max-width: 760px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.43s, transform 0.37s;
+    z-index: 20;
+    filter: drop-shadow(0 0 12px #fff49390);
+  }
+  #happyMsg.active {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1.25);
+    filter: drop-shadow(0 2px 36px #fff493fa);
+  }
+  #bees {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 10; pointer-events: none;
+  }
+  .bee {
+    position: absolute;
+    width: min(230px,52vw);
+    will-change: transform;
+    transition: transform 0.38s;
+    filter:
+      drop-shadow(0 2px 30px #ffee6c80)
+      drop-shadow(0 0 8px #ffd73882)
+      drop-shadow(2px 2px 0px #3828105c);
+    animation: sparkle 2.7s infinite alternate cubic-bezier(.44,.44,.58,.97);
+  }
+  @keyframes sparkle {
+    80% { filter: drop-shadow(0 2px 34px #ffee6c80) drop-shadow(0 0 13px #ffd74093) drop-shadow(2.5px 3px 0px #33220021);}
+    100% { filter: drop-shadow(0 3px 44px #ffffea70) drop-shadow(0 0 14px #fff493c8) drop-shadow(2px 4px 0px #38281035);}
+  }
+  @media (max-width: 490px) {
+    #hive { width: 89vw; }
+    .bee { width: min(150px,33vw);}
+    #happyMsg { max-width: 99vw; }
+  }
+  </style>
+</head>
+<body>
+  <div class="hive-area">
+    <div class="hive-container">
+      <span class="hive-shadow"></span>
+      <img id="hive" src="hive.png" alt="Hive">
+    </div>
+    <img id="happyMsg" src="happy.png" alt="Happy Birthday">
+    <div id="bees"></div>
+  </div>
+  <script>
+    // Slower, gentle bee animation!
+    const beeCount = 6;
+    const beeImgs = [];
+    const beeAngles = [];
+    const beesDiv = document.getElementById('bees');
+    for (let i = 0; i < beeCount; ++i) {
+      const bee = document.createElement('img');
+      bee.src = "bee.png";
+      bee.className = "bee";
+      beesDiv.appendChild(bee);
+      beeImgs.push(bee);
+      beeAngles.push(Math.random()*Math.PI*2 + i*Math.PI/beeCount);
+    }
+    function hiveCenter() {
+      const hive = document.getElementById('hive');
+      const rect = hive.getBoundingClientRect();
+      return {
+        x: rect.left + rect.width/2,
+        y: rect.top + rect.height/2
+      }
+    }
+    function animateBees() {
+      const now = Date.now();
+      const pos = hiveCenter();
+      for (let i = 0; i < beeCount; ++i) {
+        // Slower angular speed
+        beeAngles[i] += 0.004 + i*0.0018 + Math.sin(now/3400 + i*2.2)*0.0008;
+        let baseRadius = 250 + i*16;
+        // Slower oscillation
+        let dynamicRadius = baseRadius + Math.sin(now/2400 + i*1.7)*38;
+        // Each bee has gentle bounce and offset
+        let angle = beeAngles[i] + Math.cos(now/6600 + i*1.0)*0.5;
+        let x = pos.x
+          + Math.cos(angle) * dynamicRadius
+          + Math.sin(now/3200 + i*2.6)*10;
+        let y = pos.y
+          + Math.sin(angle) * dynamicRadius * 0.78
+          + Math.cos(now/5100 + i*1.3)*17;
+        const beeWidth = beeImgs[i].width || 230;
+        const beeHeight = beeImgs[i].height || 230;
+        beeImgs[i].style.left = (x - beeWidth/2) + 'px';
+        beeImgs[i].style.top = (y - beeHeight/2) + 'px';
+      }
+      requestAnimationFrame(animateBees);
+    }
+    animateBees();
+
+    // Happy birthday pop effect
+    const hiveImg = document.getElementById('hive');
+    const happyMsg = document.getElementById('happyMsg');
+    hiveImg.addEventListener('click', ()=>{
+      happyMsg.classList.add('active');
+      setTimeout(()=>{ happyMsg.classList.remove('active'); }, 2600);
+    });
+  </script>
+</body>
+</html>
